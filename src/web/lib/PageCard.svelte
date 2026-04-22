@@ -1,58 +1,127 @@
 <script lang="ts">
   import type { NotePage } from "../../shared/types.js";
+  import { yyyymmddToDisplay } from "./format.js";
 
   let { page, showMeta = true }: { page: NotePage; showMeta?: boolean } = $props();
 
   const paraColors: Record<string, string> = {
     project: "badge-active",
     area: "badge-planning",
-    resource: "bg-muted/20 text-muted",
-    archive: "bg-white/5 text-gray-500",
+    resource: "bg-muted",
+    archive: "badge-muted",
   };
 
   const statusColors: Record<string, string> = {
     active: "badge-active",
     planning: "badge-planning",
-    completed: "bg-white/5 text-gray-400",
+    completed: "badge-muted",
   };
 </script>
 
-<a
-  href={`/page/${encodeURIComponent(page.title)}`}
-  class="block card hover:border-accent/30 transition-colors group"
+<div
+  class="card"
+  role="button"
+  tabindex="0"
+  aria-label={page.title}
+  data-testid="page-card"
 >
-  <div class="flex items-start justify-between gap-2">
-    <span class="font-medium text-gray-100 group-hover:text-accent transition-colors truncate">
-      {page.title}
-    </span>
+  <div class="card-top">
+    <span class="card-title">{page.title}</span>
     {#if showMeta}
-      <div class="flex gap-1.5 shrink-0 flex-wrap justify-end">
-        {#if page.para}
-          <span class="badge {paraColors[page.para] ?? 'bg-white/5 text-gray-400'}">
-            {page.para}
-          </span>
+      <div class="badges">
+        {#if page.priority === "high"}
+          <span class="badge badge-danger">high</span>
         {/if}
         {#if page.status}
-          <span class="badge {statusColors[page.status] ?? ''}">
-            {page.status}
-          </span>
+          <span class="badge {statusColors[page.status] ?? 'badge-muted'}">{page.status}</span>
         {/if}
-        {#if page.priority === "high"}
-          <span class="badge badge-overdue">high</span>
+        {#if page.para && !page.status}
+          <span class="badge {paraColors[page.para] ?? 'badge-muted'}">{page.para}</span>
         {/if}
       </div>
     {/if}
   </div>
 
   {#if page.outcome}
-    <p class="mt-1.5 text-sm text-muted line-clamp-1">{page.outcome}</p>
+    <p class="card-desc">{page.outcome}</p>
   {:else if page.preview}
-    <p class="mt-1.5 text-sm text-muted line-clamp-2">{page.preview}</p>
+    <p class="card-desc">{page.preview}</p>
   {/if}
 
   {#if page.lastReview}
-    <p class="mt-2 text-xs text-gray-600">
-      last reviewed {String(page.lastReview).slice(0, 4)}-{String(page.lastReview).slice(4, 6)}-{String(page.lastReview).slice(6, 8)}
-    </p>
+    <p class="card-meta">last reviewed {yyyymmddToDisplay(page.lastReview)}</p>
   {/if}
-</a>
+</div>
+
+<style>
+  .card {
+    background: var(--surface-overlay);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    outline: none;
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    border-color: rgba(124, 106, 247, 0.5);
+    background: rgba(124, 106, 247, 0.05);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .badges {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .badge {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+
+  .badge-active   { background: rgba(166,227,161,0.18); color: var(--success); }
+  .badge-planning { background: rgba(124,106,247,0.18); color: var(--accent); }
+  .badge-danger   { background: rgba(243,139,168,0.18); color: var(--danger); }
+  .badge-muted    { background: rgba(108,108,138,0.18); color: var(--muted); }
+  .bg-muted       { background: rgba(108,108,138,0.12); color: var(--muted); }
+
+  .card-desc {
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-meta {
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+</style>

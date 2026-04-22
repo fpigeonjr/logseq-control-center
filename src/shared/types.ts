@@ -86,3 +86,8 @@ export interface StatsResponse {
   activeProjects: number;
   overdueAreas: number;
 }
+
+export interface ContentResponse {
+  title: string;
+  content: string;
+}

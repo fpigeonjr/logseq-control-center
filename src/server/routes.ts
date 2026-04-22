@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import { execSync } from "child_process";
+import fs from "fs/promises";
 import path from "path";
+import { parseLogseqFile } from "../indexer/parser.js";
 import type {
   GraphIndex,
   NotePage,
@@ -220,6 +221,23 @@ export function routes(getIndex: () => GraphIndex) {
       overdueAreas: areas.filter(isAreaOverdue).length,
     };
     return c.json(res);
+  });
+
+  // GET /api/content/:title — full body text, read on-demand (not cached in index)
+  api.get("/content/:title", async (c) => {
+    const idx = getIndex();
+    const decoded = decodeURIComponent(c.req.param("title"));
+    const page = idx.pages.find(
+      (p) => p.title.toLowerCase() === decoded.toLowerCase()
+    );
+    if (!page) return c.json({ error: "Not found" }, 404);
+    try {
+      const raw = await fs.readFile(page.filePath, "utf8");
+      const { bodyLines } = parseLogseqFile(raw);
+      return c.json({ title: page.title, content: bodyLines.join("\n") });
+    } catch {
+      return c.json({ error: "Could not read file" }, 500);
+    }
   });
 
   return api;

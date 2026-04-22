@@ -191,6 +191,27 @@ describe("GET /search", () => {
 });
 
 // ---------------------------------------------------------------------------
+// /content/:title
+// ---------------------------------------------------------------------------
+
+describe("GET /content/:title", () => {
+  it("returns full body content for a known page", async () => {
+    const { status, body } = await get(
+      `/content/${encodeURIComponent("Active Project")}`
+    );
+    expect(status).toBe(200);
+    expect(body.title).toBe("Active Project");
+    expect(typeof body.content).toBe("string");
+    expect(body.content.length).toBeGreaterThan(0);
+  });
+
+  it("returns 404 for an unknown page", async () => {
+    const { status } = await get("/content/Does%20Not%20Exist");
+    expect(status).toBe(404);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // /stats
 // ---------------------------------------------------------------------------
 

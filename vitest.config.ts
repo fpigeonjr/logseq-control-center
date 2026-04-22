@@ -1,18 +1,31 @@
 import { defineConfig } from "vitest/config";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
 
 export default defineConfig({
+  // Svelte plugin is required for Vitest to process .svelte files
+  plugins: [svelte({ hot: false })],
+
   test: {
-    // Run tests in Node environment (no browser needed for unit tests)
+    // Default environment for server/indexer tests
     environment: "node",
-    // Glob for test files — co-located __tests__ dirs or *.test.ts files
+
+    // Use happy-dom for Svelte component tests
+    environmentMatchGlobs: [["src/web/**", "happy-dom"]],
+
     include: ["src/**/*.test.ts", "src/**/__tests__/**/*.ts"],
-    exclude: ["src/web/**", "tests/e2e/**", "node_modules/**"],
+    exclude: ["tests/e2e/**", "node_modules/**"],
+
+    // Load jest-dom matchers globally for component tests
+    setupFiles: ["./tests/setup.ts"],
+
+    reporters: ["verbose"],
+
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov", "html"],
       reportsDirectory: "./coverage",
-      include: ["src/indexer/**", "src/server/**", "src/shared/**"],
+      include: ["src/indexer/**", "src/server/**", "src/shared/**", "src/web/lib/**", "src/web/stores/**"],
       exclude: ["src/indexer/cli.ts", "src/server/index.ts"],
       thresholds: {
         lines: 70,
@@ -20,12 +33,12 @@ export default defineConfig({
         branches: 60,
       },
     },
-    // Print a clean diff on failures
-    reporters: ["verbose"],
   },
+
   resolve: {
+    conditions: ["browser"],
     alias: {
-      "@": path.resolve(__dirname, "src"),
+      "@": path.resolve("./src"),
     },
   },
 });
