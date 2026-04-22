@@ -243,6 +243,16 @@
     padding: 1px 5px;
   }
 
+  .journal-body :global(.inline-code) {
+    font-family: var(--font);
+    font-size: 11px;
+    color: var(--warning);
+    background: rgba(250, 179, 135, 0.1);
+    border: 1px solid rgba(250, 179, 135, 0.2);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+
   .state-empty {
     color: var(--muted);
     font-size: 12px;

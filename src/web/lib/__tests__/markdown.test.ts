@@ -25,6 +25,18 @@ describe("renderJournalBody", () => {
     expect(html).toContain('<span class="journal-tag">#svelte</span>');
   });
 
+  it("renders a bare ## heading line (not inside a bullet)", () => {
+    const html = renderJournalBody("## Fleeting Thoughts");
+    expect(html).toContain("journal-heading");
+    expect(html).toContain("Fleeting Thoughts");
+    expect(html).not.toContain("journal-line");
+  });
+
+  it("renders inline backtick code as inline-code span", () => {
+    const html = renderJournalBody("- run `npm install` first");
+    expect(html).toContain('<code class="inline-code">npm install</code>');
+  });
+
   it("renders headings inside bullets as journal-heading divs", () => {
     const html = renderJournalBody("- ## Section Title");
     expect(html).toContain("journal-heading");

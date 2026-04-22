@@ -3,16 +3,18 @@
  *
  * Handles the patterns that appear in journal and page bodies:
  *   - `- ` bullet (any indentation depth)
+ *   - `## Heading` — both bare lines AND inside a bullet
  *   - `[[wikilink]]` → styled span
  *   - `**bold**` → <strong>
+ *   - `` `code` `` → <code>
  *   - `#tag` → badge span
- *   - `## Heading` inside a bullet → renders as a sub-heading
  *
  * This is NOT a full markdown parser — just enough for readable journals.
  */
 
 const WIKILINK_RE = /\[\[([^\]]+)\]\]/g;
 const BOLD_RE = /\*\*([^*]+)\*\*/g;
+const CODE_RE = /`([^`]+)`/g;
 const TAG_RE = /(^|\s)(#[a-zA-Z0-9_/-]+)/g;
 const BULLET_RE = /^(\s*)- (.*)/;
 const HEADING_RE = /^#{1,4}\s+(.+)/;
@@ -21,6 +23,7 @@ function processInline(text: string): string {
   return text
     .replace(WIKILINK_RE, '<span class="wikilink">$1</span>')
     .replace(BOLD_RE, "<strong>$1</strong>")
+    .replace(CODE_RE, '<code class="inline-code">$1</code>')
     .replace(TAG_RE, '$1<span class="journal-tag">$2</span>');
 }
 
@@ -39,7 +42,7 @@ export function renderJournalBody(raw: string): string {
       const depth = Math.floor(indent / 2);
       const content = bulletMatch[2];
 
-      // A bullet that starts with ## is a section heading inside a block
+      // Bullet that starts with ## → section heading
       const headingMatch = content.match(HEADING_RE);
       if (headingMatch) {
         parts.push(
@@ -50,8 +53,15 @@ export function renderJournalBody(raw: string): string {
           `<div class="journal-bullet" style="margin-left:${depth * 16}px">${processInline(content)}</div>`
         );
       }
-    } else if (line.trim()) {
-      parts.push(`<div class="journal-line">${processInline(line.trim())}</div>`);
+    } else {
+      const trimmed = line.trim();
+      // Bare ## heading line (not inside a bullet)
+      const headingMatch = trimmed.match(HEADING_RE);
+      if (headingMatch) {
+        parts.push(`<div class="journal-heading">${processInline(headingMatch[1])}</div>`);
+      } else {
+        parts.push(`<div class="journal-line">${processInline(trimmed)}</div>`);
+      }
     }
   }
 

@@ -176,6 +176,7 @@
     border-radius: var(--radius-card);
     padding: 12px 14px;
     cursor: pointer;
+    overflow: hidden;
     transition:
       border-color var(--transition-fast),
       transform var(--transition-fast);
@@ -202,6 +203,7 @@
     justify-content: space-between;
     gap: 6px;
     margin-bottom: 5px;
+    min-width: 0;
   }
 
   .area-title {
@@ -209,6 +211,11 @@
     font-weight: 600;
     color: var(--text);
     transition: color var(--transition-fast);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
   }
 
   .area-card:hover .area-title {
@@ -237,6 +244,7 @@
     flex-wrap: wrap;
     justify-content: flex-end;
     flex-shrink: 0;
+    max-width: 55%;
   }
 
   .badge {
@@ -246,6 +254,10 @@
     letter-spacing: 0.04em;
     padding: 2px 6px;
     border-radius: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
   }
 
   .badge-danger {
