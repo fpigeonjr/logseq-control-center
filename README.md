@@ -23,22 +23,22 @@ Then open `http://localhost:5173` in your browser.
 
 ## Available commands
 
-| Command | Description |
-|---|---|
-| `make dev` | Start both server and Vite dev server with hot reload |
-| `make index` | Run the indexer and print stats (validates parser) |
-| `make index-json` | Full JSON dump of the graph index |
-| `make test` | Run Vitest unit tests |
-| `make test-watch` | Run Vitest in watch mode |
-| `make test-coverage` | Run tests + generate coverage report |
-| `make test-e2e` | Run Playwright e2e tests (requires server) |
-| `make test-e2e-ui` | Open Playwright UI |
-| `make test-all` | typecheck + lint + unit + e2e |
-| `make lint` | ESLint + Prettier check |
-| `make lint-fix` | Auto-fix lint and formatting issues |
-| `make typecheck` | TypeScript type check |
-| `make build` | Production build |
-| `make clean` | Remove build artifacts |
+| Command              | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| `make dev`           | Start both server and Vite dev server with hot reload |
+| `make index`         | Run the indexer and print stats (validates parser)    |
+| `make index-json`    | Full JSON dump of the graph index                     |
+| `make test`          | Run Vitest unit tests                                 |
+| `make test-watch`    | Run Vitest in watch mode                              |
+| `make test-coverage` | Run tests + generate coverage report                  |
+| `make test-e2e`      | Run Playwright e2e tests (requires server)            |
+| `make test-e2e-ui`   | Open Playwright UI                                    |
+| `make test-all`      | typecheck + lint + unit + e2e                         |
+| `make lint`          | ESLint + Prettier check                               |
+| `make lint-fix`      | Auto-fix lint and formatting issues                   |
+| `make typecheck`     | TypeScript type check                                 |
+| `make build`         | Production build                                      |
+| `make clean`         | Remove build artifacts                                |
 
 ## Project structure
 
@@ -58,18 +58,18 @@ tests/
 
 ## API routes
 
-| Route | Description |
-|---|---|
-| `GET /api/health` | Server health + page count |
-| `GET /api/today` | Today's journal + date nav |
+| Route                    | Description                       |
+| ------------------------ | --------------------------------- |
+| `GET /api/health`        | Server health + page count        |
+| `GET /api/today`         | Today's journal + date nav        |
 | `GET /api/journal/:date` | Journal for a specific YYYY-MM-DD |
-| `GET /api/projects` | Projects grouped by status |
-| `GET /api/areas` | Areas grouped by review urgency |
-| `GET /api/resources` | All resource pages |
-| `GET /api/random` | Random non-archive page |
-| `GET /api/page/:title` | Single page + backlinks |
-| `GET /api/search?q=` | Full-text substring search |
-| `GET /api/stats` | PARA counts + overdue summary |
+| `GET /api/projects`      | Projects grouped by status        |
+| `GET /api/areas`         | Areas grouped by review urgency   |
+| `GET /api/resources`     | All resource pages                |
+| `GET /api/random`        | Random non-archive page           |
+| `GET /api/page/:title`   | Single page + backlinks           |
+| `GET /api/search?q=`     | Full-text substring search        |
+| `GET /api/stats`         | PARA counts + overdue summary     |
 
 ## Environment variables
 

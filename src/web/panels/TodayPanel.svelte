@@ -5,7 +5,6 @@
   import { renderJournalBody } from "../lib/markdown.js";
   import type { TodayResponse } from "../../shared/types.js";
 
-  // Current date being viewed (ISO string). Defaults to today.
   let currentDate = $state<string>(new Date().toISOString().split("T")[0]);
   let todayData = $state<TodayResponse | null>(null);
   let bodyHtml = $state<string>("");
@@ -17,21 +16,21 @@
     loadingMeta = true;
     error = null;
     bodyHtml = "";
+
     try {
-      if (iso === new Date().toISOString().split("T")[0]) {
+      const today = new Date().toISOString().split("T")[0];
+      if (iso === today) {
         todayData = await api<TodayResponse>("/today");
       } else {
-        const res = await api<{ date: string; page: typeof todayData extends null ? null : NonNullable<TodayResponse["page"]> }>(`/journal/${iso}`);
-        // Normalise to TodayResponse shape for uniform rendering
+        const res = await api<{ date: string; page: TodayResponse["page"] }>(`/journal/${iso}`);
         todayData = {
           date: iso,
-          page: (res as { date: string; page: TodayResponse["page"] }).page,
+          page: res.page,
           yesterday: isoOffset(iso, -1),
           tomorrow: isoOffset(iso, 1),
         };
       }
 
-      // Fetch full body content if the page exists
       if (todayData?.page) {
         loadingBody = true;
         try {
@@ -67,20 +66,23 @@
   <div class="panel-header">
     <h2 class="panel-title">📅 Today</h2>
     <div class="panel-nav">
-      <button onclick={() => navigate(-1)} aria-label="Previous day">← Prev</button>
-      <button onclick={() => navigate(1)} disabled={isToday} aria-label="Next day"
-        >Next →</button
+      <button onclick={() => navigate(-1)} aria-label="Previous day" title="Previous day"
+        >← Prev</button
       >
+      <button onclick={() => navigate(1)} disabled={isToday} aria-label="Next day" title="Next day">
+        Next →
+      </button>
     </div>
   </div>
 
   <div class="panel-body">
     {#if loadingMeta}
-      <div class="skeleton-line wide"></div>
-      <div class="skeleton-line"></div>
-      <div class="skeleton-line medium"></div>
+      <div class="skeleton" style="height:20px;width:60%;margin-bottom:14px;"></div>
+      {#each [90, 75, 80] as w}
+        <div class="skeleton" style="height:12px;width:{w}%;margin-bottom:8px;"></div>
+      {/each}
     {:else if error}
-      <p class="panel-error">⚠ {error}</p>
+      <p class="state-error">⚠ {error}</p>
     {:else}
       <div class="journal-date" data-testid="journal-date">
         {formatJournalDate(currentDate)}
@@ -88,11 +90,11 @@
       </div>
 
       {#if !todayData?.page}
-        <p class="empty-state">No journal entry for this day.</p>
+        <p class="state-empty">No journal entry for this day.</p>
       {:else if loadingBody}
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line medium"></div>
-        <div class="skeleton-line wide"></div>
+        {#each [85, 70, 90] as w}
+          <div class="skeleton" style="height:12px;width:{w}%;margin-bottom:8px;"></div>
+        {/each}
       {:else}
         <div class="journal-body" data-testid="journal-body">
           {@html bodyHtml}
@@ -113,7 +115,7 @@
   }
 
   .panel-header {
-    padding: 12px 16px;
+    padding: 11px 16px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -121,10 +123,10 @@
   }
 
   .panel-title {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.08em;
     color: var(--muted);
     flex: 1;
     margin: 0;
@@ -132,19 +134,21 @@
 
   .panel-nav {
     display: flex;
-    gap: 6px;
+    gap: 4px;
   }
 
   .panel-nav button {
     background: var(--surface-overlay);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 3px 8px;
+    padding: 3px 9px;
     font-family: var(--font);
     font-size: 11px;
     color: var(--text-dim);
     cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
   }
 
   .panel-nav button:hover:not(:disabled) {
@@ -153,7 +157,7 @@
   }
 
   .panel-nav button:disabled {
-    opacity: 0.3;
+    opacity: 0.25;
     cursor: default;
   }
 
@@ -161,55 +165,57 @@
     padding: 16px;
     flex: 1;
     overflow-y: auto;
-    max-height: 480px;
+    max-height: 500px;
   }
 
   .journal-date {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--text);
     margin-bottom: 14px;
     display: flex;
     align-items: baseline;
-    gap: 8px;
     flex-wrap: wrap;
+    gap: 8px;
   }
 
   .journal-iso {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 400;
     color: var(--muted);
   }
 
+  /* ── Rendered journal body ──────────────────────────────── */
   .journal-body {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
     font-size: 12px;
-    line-height: 1.5;
+    line-height: 1.55;
   }
 
-  /* Styles for rendered journal HTML */
   .journal-body :global(.journal-bullet) {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     color: var(--text-dim);
     padding: 1px 0;
   }
 
-  .journal-body :global(.journal-bullet)::before {
+  .journal-body :global(.journal-bullet::before) {
     content: "•";
     color: var(--accent);
     flex-shrink: 0;
+    margin-top: 1px;
+    opacity: 0.7;
   }
 
   .journal-body :global(.journal-heading) {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text);
-    margin-top: 8px;
-    margin-bottom: 2px;
-    padding-bottom: 4px;
+    margin-top: 10px;
+    margin-bottom: 3px;
+    padding-bottom: 5px;
     border-bottom: 1px solid var(--border);
   }
 
@@ -219,12 +225,14 @@
 
   .journal-body :global(.wikilink) {
     color: var(--accent);
-    text-decoration: none;
     cursor: pointer;
+    border-bottom: 1px solid rgba(124, 106, 247, 0.3);
+    transition: color var(--transition-fast);
   }
 
   .journal-body :global(.wikilink:hover) {
-    text-decoration: underline;
+    color: var(--accent-hover);
+    border-bottom-color: var(--accent);
   }
 
   .journal-body :global(.journal-tag) {
@@ -235,32 +243,14 @@
     padding: 1px 5px;
   }
 
-  .empty-state {
+  .state-empty {
     color: var(--muted);
     font-size: 12px;
     font-style: italic;
   }
 
-  .panel-error {
+  .state-error {
     color: var(--danger);
     font-size: 12px;
-  }
-
-  /* Skeletons */
-  .skeleton-line {
-    height: 12px;
-    background: var(--surface-overlay);
-    border-radius: 4px;
-    margin-bottom: 8px;
-    width: 60%;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-
-  .skeleton-line.wide   { width: 90%; }
-  .skeleton-line.medium { width: 75%; }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
   }
 </style>

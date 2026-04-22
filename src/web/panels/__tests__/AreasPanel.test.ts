@@ -24,9 +24,7 @@ const makeAreasResponse = (overrides = {}) => ({
     makeArea({ title: "Home", lastReview: 20250911, frequency: "quarterly" }),
     makeArea({ title: "Health", lastReview: 20260323, frequency: "monthly" }),
   ],
-  upcoming: [
-    makeArea({ title: "Finances", lastReview: 20260418, frequency: "weekly" }),
-  ],
+  upcoming: [makeArea({ title: "Finances", lastReview: 20260418, frequency: "weekly" })],
   ok: [makeArea({ title: "Band", lastReview: 20260412, frequency: "monthly" })],
   ...overrides,
 });

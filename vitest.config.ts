@@ -25,7 +25,13 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "lcov", "html"],
       reportsDirectory: "./coverage",
-      include: ["src/indexer/**", "src/server/**", "src/shared/**", "src/web/lib/**", "src/web/stores/**"],
+      include: [
+        "src/indexer/**",
+        "src/server/**",
+        "src/shared/**",
+        "src/web/lib/**",
+        "src/web/stores/**",
+      ],
       exclude: ["src/indexer/cli.ts", "src/server/index.ts"],
       thresholds: {
         lines: 70,

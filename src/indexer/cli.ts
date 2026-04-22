@@ -25,7 +25,10 @@ async function loadEnv() {
       const eq = trimmed.indexOf("=");
       if (eq === -1) continue;
       const key = trimmed.slice(0, eq).trim();
-      const val = trimmed.slice(eq + 1).trim().replace(/^['"]|['"]$/g, "");
+      const val = trimmed
+        .slice(eq + 1)
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
       if (!process.env[key]) process.env[key] = val;
     }
   } catch {
@@ -42,17 +45,13 @@ const args = process.argv.slice(2);
 const statsOnly = args.includes("--stats");
 const notesIdx = args.indexOf("--notes");
 const notesDir =
-  notesIdx !== -1 && args[notesIdx + 1]
-    ? args[notesIdx + 1]
-    : (process.env.NOTES_DIR ?? "~/Notes");
+  notesIdx !== -1 && args[notesIdx + 1] ? args[notesIdx + 1] : (process.env.NOTES_DIR ?? "~/Notes");
 
 console.error(`[indexer] Building index from: ${notesDir}`);
 const t0 = Date.now();
 const index = await buildIndex(notesDir);
 const elapsed = Date.now() - t0;
-console.error(
-  `[indexer] Done in ${elapsed}ms — ${index.pages.length} pages indexed`
-);
+console.error(`[indexer] Done in ${elapsed}ms — ${index.pages.length} pages indexed`);
 
 if (statsOnly) {
   const projects = index.pages.filter((p) => p.para === "project");
@@ -74,7 +73,8 @@ if (statsOnly) {
           area: areas.length,
           resource: resources.length,
           archive: archive.length,
-          none: index.pages.length - projects.length - areas.length - resources.length - archive.length,
+          none:
+            index.pages.length - projects.length - areas.length - resources.length - archive.length,
         },
         activeProjects: projects.filter((p) => p.status === "active").length,
         backlinkEntries: Object.keys(index.backlinks).length,

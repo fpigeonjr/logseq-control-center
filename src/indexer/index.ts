@@ -28,10 +28,7 @@ function journalFilenameToDate(filename: string): string | null {
 // Single-file builder
 // ---------------------------------------------------------------------------
 
-async function buildPage(
-  filePath: string,
-  notesDir: string
-): Promise<NotePage | null> {
+async function buildPage(filePath: string, notesDir: string): Promise<NotePage | null> {
   let raw: string;
   try {
     raw = await fs.readFile(filePath, "utf8");
@@ -50,9 +47,7 @@ async function buildPage(
   const bodyText = bodyLines.join("\n");
 
   const page: NotePage = {
-    title: isJournal && journalDate
-      ? journalDate
-      : title,
+    title: isJournal && journalDate ? journalDate : title,
     filePath,
     relativePath,
     isJournal,
@@ -113,9 +108,9 @@ export async function buildIndex(notesDir: string): Promise<GraphIndex> {
 
   const allFiles = [...pageFiles, ...journalFiles];
 
-  const pages = (
-    await Promise.all(allFiles.map((f) => buildPage(f, absNotesDir)))
-  ).filter((p): p is NotePage => p !== null);
+  const pages = (await Promise.all(allFiles.map((f) => buildPage(f, absNotesDir)))).filter(
+    (p): p is NotePage => p !== null
+  );
 
   // Build backlinks map
   const backlinks: Record<string, string[]> = {};

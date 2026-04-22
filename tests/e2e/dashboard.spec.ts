@@ -72,9 +72,7 @@ test.describe("Dashboard — API integration (M2)", () => {
     expect(typeof body.content).toBe("string");
   });
 
-  test("GET /api/stats overdue count matches /api/areas overdue length", async ({
-    request,
-  }) => {
+  test("GET /api/stats overdue count matches /api/areas overdue length", async ({ request }) => {
     const [statsRes, areasRes] = await Promise.all([
       request.get("/api/stats"),
       request.get("/api/areas"),
@@ -86,9 +84,7 @@ test.describe("Dashboard — API integration (M2)", () => {
     expect(stats.overdueAreas).toBe(areas.overdue.length);
   });
 
-  test("GET /api/random never returns a journal or archive page", async ({
-    request,
-  }) => {
+  test("GET /api/random never returns a journal or archive page", async ({ request }) => {
     // Call it 5 times to reduce flakiness
     for (let i = 0; i < 5; i++) {
       const res = await request.get("/api/random");

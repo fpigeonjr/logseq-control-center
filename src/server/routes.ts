@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import fs from "fs/promises";
-import path from "path";
 import { parseLogseqFile } from "../indexer/parser.js";
 import type {
   GraphIndex,
@@ -18,11 +17,9 @@ import type {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** YYYYMMDD integer for a Date */
-function toYYYYMMDD(d: Date): number {
-  return (
-    d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate()
-  );
+/** Days elapsed since a YYYYMMDD date */
+function _toYYYYMMDD(d: Date): number {
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
 }
 
 /** ISO date string (YYYY-MM-DD) offset by `days` from today */
@@ -135,9 +132,7 @@ export function routes(getIndex: () => GraphIndex) {
   // GET /api/random
   api.get("/random", (c) => {
     const idx = getIndex();
-    const pool = idx.pages.filter(
-      (p) => !p.isJournal && p.para !== "archive"
-    );
+    const pool = idx.pages.filter((p) => !p.isJournal && p.para !== "archive");
     if (pool.length === 0) return c.json({ error: "No pages found" }, 404);
     const page = pool[Math.floor(Math.random() * pool.length)];
     const res: RandomResponse = { page };
@@ -149,9 +144,7 @@ export function routes(getIndex: () => GraphIndex) {
     const idx = getIndex();
     const { title } = c.req.param();
     const decoded = decodeURIComponent(title);
-    const page = idx.pages.find(
-      (p) => p.title.toLowerCase() === decoded.toLowerCase()
-    );
+    const page = idx.pages.find((p) => p.title.toLowerCase() === decoded.toLowerCase());
     if (!page) return c.json({ error: "Not found" }, 404);
     const backlinkTitles = idx.backlinks[page.title] ?? [];
     const backlinks = backlinkTitles
@@ -179,7 +172,10 @@ export function routes(getIndex: () => GraphIndex) {
           const idx2 = page.preview.toLowerCase().indexOf(lower);
           const start = Math.max(0, idx2 - 60);
           const end = Math.min(page.preview.length, idx2 + lower.length + 60);
-          snippet = (start > 0 ? "…" : "") + page.preview.slice(start, end) + (end < page.preview.length ? "…" : "");
+          snippet =
+            (start > 0 ? "…" : "") +
+            page.preview.slice(start, end) +
+            (end < page.preview.length ? "…" : "");
         }
         results.push({ page, snippet });
       }
@@ -207,7 +203,10 @@ export function routes(getIndex: () => GraphIndex) {
     };
     let journals = 0;
     for (const p of idx.pages) {
-      if (p.isJournal) { journals++; continue; }
+      if (p.isJournal) {
+        journals++;
+        continue;
+      }
       paraBreakdown[p.para ?? "none"]++;
     }
     const areas = idx.pages.filter((p) => p.para === "area");
@@ -215,9 +214,7 @@ export function routes(getIndex: () => GraphIndex) {
       totalPages: idx.pages.length - journals,
       totalJournals: journals,
       paraBreakdown,
-      activeProjects: idx.pages.filter(
-        (p) => p.para === "project" && p.status === "active"
-      ).length,
+      activeProjects: idx.pages.filter((p) => p.para === "project" && p.status === "active").length,
       overdueAreas: areas.filter(isAreaOverdue).length,
     };
     return c.json(res);
@@ -227,9 +224,7 @@ export function routes(getIndex: () => GraphIndex) {
   api.get("/content/:title", async (c) => {
     const idx = getIndex();
     const decoded = decodeURIComponent(c.req.param("title"));
-    const page = idx.pages.find(
-      (p) => p.title.toLowerCase() === decoded.toLowerCase()
-    );
+    const page = idx.pages.find((p) => p.title.toLowerCase() === decoded.toLowerCase());
     if (!page) return c.json({ error: "Not found" }, 404);
     try {
       const raw = await fs.readFile(page.filePath, "utf8");

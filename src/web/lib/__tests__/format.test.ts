@@ -27,10 +27,7 @@ describe("yyyymmddToDisplay", () => {
 describe("daysSince", () => {
   it("returns 0 for today's date", () => {
     const today = new Date();
-    const n =
-      today.getFullYear() * 10000 +
-      (today.getMonth() + 1) * 100 +
-      today.getDate();
+    const n = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
     expect(daysSince(n)).toBe(0);
   });
 

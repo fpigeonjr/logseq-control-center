@@ -6,31 +6,20 @@
   let stats = $state<StatsResponse | null>(null);
   let error = $state(false);
 
-  onMount(async () => {
+  async function load() {
     try {
       stats = await api<StatsResponse>("/stats");
+      error = false;
     } catch {
       error = true;
     }
-  });
+  }
 
-  // Auto-refresh every 60s or on window focus
   onMount(() => {
-    const interval = setInterval(async () => {
-      try {
-        stats = await api<StatsResponse>("/stats");
-      } catch {
-        /* silent refresh failure */
-      }
-    }, 60_000);
+    load();
 
-    const onFocus = async () => {
-      try {
-        stats = await api<StatsResponse>("/stats");
-      } catch {
-        /* silent */
-      }
-    };
+    const interval = setInterval(load, 60_000);
+    const onFocus = () => load();
     window.addEventListener("focus", onFocus);
 
     return () => {
@@ -43,9 +32,12 @@
 <div class="stats-bar" role="region" aria-label="Graph statistics">
   {#if stats}
     <div class="stat-card">
-      <div class="num accent" data-testid="stat-active-projects">{stats.activeProjects}</div>
+      <div class="num accent" data-testid="stat-active-projects">
+        {stats.activeProjects}
+      </div>
       <div class="label">Active Projects</div>
     </div>
+
     <div class="stat-card">
       <div
         class="num"
@@ -57,19 +49,28 @@
       </div>
       <div class="label">Areas Overdue</div>
     </div>
+
     <div class="stat-card">
-      <div class="num neutral" data-testid="stat-pages">{stats.totalPages.toLocaleString()}</div>
+      <div class="num neutral" data-testid="stat-pages">
+        {stats.totalPages.toLocaleString()}
+      </div>
       <div class="label">Pages</div>
     </div>
+
     <div class="stat-card">
-      <div class="num neutral" data-testid="stat-journals">{stats.totalJournals.toLocaleString()}</div>
+      <div class="num neutral" data-testid="stat-journals">
+        {stats.totalJournals.toLocaleString()}
+      </div>
       <div class="label">Journals</div>
     </div>
   {:else if error}
     <div class="stats-error">⚠ Could not load stats</div>
   {:else}
     {#each [0, 1, 2, 3] as _}
-      <div class="stat-card skeleton"></div>
+      <div class="stat-card">
+        <div class="skeleton" style="height:22px;width:40px;margin:0 auto 4px;"></div>
+        <div class="skeleton" style="height:10px;width:70%;margin:0 auto;"></div>
+      </div>
     {/each}
   {/if}
 </div>
@@ -78,8 +79,8 @@
   .stats-bar {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    padding: 14px 20px;
+    gap: 10px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     background: var(--surface-raised);
   }
@@ -90,35 +91,39 @@
     border-radius: 10px;
     padding: 10px 14px;
     text-align: center;
+    transition: border-color var(--transition-fast);
   }
 
-  .stat-card.skeleton {
-    height: 56px;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+  .stat-card:hover {
+    border-color: rgba(124, 106, 247, 0.2);
   }
 
   .num {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     line-height: 1;
+    font-variant-numeric: tabular-nums;
   }
 
-  .num.accent   { color: var(--accent); }
-  .num.danger   { color: var(--danger); }
-  .num.success  { color: var(--success); }
-  .num.neutral  { color: var(--text-dim); }
+  .num.accent {
+    color: var(--accent);
+  }
+  .num.danger {
+    color: var(--danger);
+  }
+  .num.success {
+    color: var(--success);
+  }
+  .num.neutral {
+    color: var(--text-dim);
+  }
 
   .label {
     font-size: 10px;
     color: var(--muted);
-    margin-top: 3px;
+    margin-top: 4px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.06em;
   }
 
   .stats-error {
@@ -127,5 +132,12 @@
     font-size: 12px;
     color: var(--danger);
     padding: 12px;
+  }
+
+  @media (max-width: 480px) {
+    .stats-bar {
+      grid-template-columns: repeat(2, 1fr);
+      padding: 10px 12px;
+    }
   }
 </style>

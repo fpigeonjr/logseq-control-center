@@ -21,18 +21,20 @@ async function loadEnv() {
       const eq = trimmed.indexOf("=");
       if (eq === -1) continue;
       const key = trimmed.slice(0, eq).trim();
-      const val = trimmed.slice(eq + 1).trim().replace(/^['"]|['"]$/g, "");
+      const val = trimmed
+        .slice(eq + 1)
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
       if (!process.env[key]) process.env[key] = val;
     }
-  } catch { /* no .env */ }
+  } catch {
+    /* no .env */
+  }
 }
 
 await loadEnv();
 
-const NOTES_DIR = (process.env.NOTES_DIR ?? "~/Notes").replace(
-  /^~/,
-  process.env.HOME!
-);
+const NOTES_DIR = (process.env.NOTES_DIR ?? "~/Notes").replace(/^~/, process.env.HOME!);
 const PORT = Number(process.env.PORT ?? 7890);
 const HOST = process.env.HOST ?? "0.0.0.0";
 
@@ -69,7 +71,10 @@ const app = new Hono();
 app.use("*", cors({ origin: "*" }));
 
 // Mount API routes (pass the live index via closure)
-app.route("/api", routes(() => index));
+app.route(
+  "/api",
+  routes(() => index)
+);
 
 // Serve the built Svelte app in production
 app.use("/*", serveStatic({ root: "./dist/web" }));

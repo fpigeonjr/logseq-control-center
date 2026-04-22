@@ -3,15 +3,26 @@ import tseslint from "typescript-eslint";
 import sveltePlugin from "eslint-plugin-svelte";
 import svelteParser from "svelte-eslint-parser";
 import prettierConfig from "eslint-config-prettier";
+import globals from "globals";
 
 export default tseslint.config(
   // Base JS rules
   eslint.configs.recommended,
 
-  // TypeScript rules (non-type-checked for speed; upgrade to type-checked later)
+  // TypeScript rules
   ...tseslint.configs.recommended,
 
-  // Svelte files
+  // Node environment for server/indexer files
+  {
+    files: ["src/server/**/*.ts", "src/indexer/**/*.ts", "src/shared/**/*.ts"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+
+  // Svelte component files — browser environment
   {
     files: ["**/*.svelte"],
     plugins: { svelte: sveltePlugin },
@@ -20,31 +31,65 @@ export default tseslint.config(
       parserOptions: {
         parser: tseslint.parser,
       },
+      globals: {
+        ...globals.browser,
+      },
     },
     rules: {
       ...sveltePlugin.configs.recommended.rules,
+      // @typescript-eslint/no-unused-vars can't see Svelte template usage
+      // eslint-plugin-svelte handles variable checking for .svelte files
+      "@typescript-eslint/no-unused-vars": "off",
+      "no-unused-vars": "off",
+    },
+  },
+
+  // Web TS files (stores, lib helpers) — browser environment
+  {
+    files: ["src/web/**/*.ts"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+
+  // Test files — node + browser globals
+  {
+    files: ["src/**/__tests__/**/*.ts", "tests/**/*.ts"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
     },
   },
 
   // Project-wide rule overrides
   {
     rules: {
-      // Allow unused vars prefixed with _ (common in TS destructuring)
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-      // LogSeq data comes in as unknown strings → allow explicit any sparingly
       "@typescript-eslint/no-explicit-any": "warn",
-      // Allow non-null assertions in tests and known contexts
       "@typescript-eslint/no-non-null-assertion": "warn",
     },
   },
 
-  // Disable ESLint formatting rules (Prettier owns that)
+  // Prettier owns formatting
   prettierConfig,
 
-  // Ignore build artifacts and generated files
+  // Final override: re-disable TS unused-vars for Svelte files
+  // (must come after the global rules block above)
+  {
+    files: ["**/*.svelte"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "no-unused-vars": "off",
+    },
+  },
+
   {
     ignores: [
       "dist/**",
@@ -52,7 +97,6 @@ export default tseslint.config(
       "coverage/**",
       "playwright-report/**",
       "test-results/**",
-      ".svelte-kit/**",
     ],
   }
 );

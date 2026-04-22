@@ -79,7 +79,7 @@ describe("ProjectsPanel", () => {
     render(ProjectsPanel);
 
     await screen.findByText("GSA");
-    const toggle = screen.getByText(/Show 1 completed project/i);
+    const toggle = screen.getByText(/Show 1 completed/i);
     await user.click(toggle);
 
     expect(screen.getByText("Atlas")).toBeInTheDocument();
@@ -98,7 +98,10 @@ describe("ProjectsPanel", () => {
 
   it("shows loading skeletons initially", () => {
     // Don't resolve fetch — panel should show skeletons
-    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise(() => {}))
+    );
     render(ProjectsPanel);
 
     // Panel renders but no project titles yet

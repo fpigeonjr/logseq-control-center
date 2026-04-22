@@ -147,9 +147,7 @@ describe("GET /random", () => {
 
 describe("GET /page/:title", () => {
   it("returns the page and its backlinks", async () => {
-    const { status, body } = await get(
-      `/page/${encodeURIComponent("Active Project")}`
-    );
+    const { status, body } = await get(`/page/${encodeURIComponent("Active Project")}`);
     expect(status).toBe(200);
     expect(body.page.title).toBe("Active Project");
     expect(Array.isArray(body.backlinks)).toBe(true);
@@ -196,9 +194,7 @@ describe("GET /search", () => {
 
 describe("GET /content/:title", () => {
   it("returns full body content for a known page", async () => {
-    const { status, body } = await get(
-      `/content/${encodeURIComponent("Active Project")}`
-    );
+    const { status, body } = await get(`/content/${encodeURIComponent("Active Project")}`);
     expect(status).toBe(200);
     expect(body.title).toBe("Active Project");
     expect(typeof body.content).toBe("string");
