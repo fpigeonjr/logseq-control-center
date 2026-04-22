@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Local dashboard for a LogSeq graph — life OS control center",
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "index": "tsx src/indexer/cli.ts",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
