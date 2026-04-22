@@ -1,0 +1,81 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: saturday
+      time: "08:00"
+      timezone: America/Chicago
+
+    # Keep PRs manageable
+    open-pull-requests-limit: 8
+
+    assignees:
+      - fpigeonjr
+    reviewers:
+      - fpigeonjr
+    labels:
+      - dependencies
+
+    groups:
+      # Svelte ecosystem — must move together (our vite-plugin-svelte lesson)
+      svelte-ecosystem:
+        patterns:
+          - "svelte"
+          - "@sveltejs/*"
+          - "svelte-eslint-parser"
+          - "eslint-plugin-svelte"
+          - "prettier-plugin-svelte"
+          - "@testing-library/svelte"
+        update-types:
+          - minor
+          - patch
+
+      # Vite gets its own group — validate plugin compat before merging
+      vite:
+        patterns:
+          - "vite"
+        update-types:
+          - minor
+          - patch
+
+      # TypeScript toolchain — keep in sync
+      typescript-toolchain:
+        patterns:
+          - "typescript"
+          - "typescript-eslint"
+          - "@typescript-eslint/*"
+          - "@tsconfig/*"
+        update-types:
+          - minor
+          - patch
+
+      # Testing stack
+      testing-stack:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@playwright/*"
+          - "@testing-library/*"
+          - "happy-dom"
+        update-types:
+          - minor
+          - patch
+
+      # Remaining devDeps minor/patch
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+
+      # Prod deps minor/patch
+      prod-dependencies:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+
+    # Major version bumps always get solo PRs (no group override)
+    ignore: []
