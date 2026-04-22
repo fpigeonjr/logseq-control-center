@@ -37,6 +37,57 @@ describe("renderJournalBody", () => {
     expect(html).toContain('<code class="inline-code">npm install</code>');
   });
 
+  // ── Task states ────────────────────────────────────────────
+
+  it("renders TODO bullet with task-todo class and badge", () => {
+    const html = renderJournalBody("- TODO angular training");
+    expect(html).toContain("task-todo");
+    expect(html).toContain("task-badge");
+    expect(html).toContain("angular training");
+    expect(html).not.toContain("task-strike");
+  });
+
+  it("handles TODO: with colon variant", () => {
+    const html = renderJournalBody("- TODO: finish report");
+    expect(html).toContain("task-todo");
+    expect(html).toContain("finish report");
+  });
+
+  it("renders DOING bullet with task-doing class", () => {
+    const html = renderJournalBody("- DOING [[OPS Closeout Plan]] work");
+    expect(html).toContain("task-doing");
+    expect(html).toContain("wikilink");
+  });
+
+  it("renders DONE bullet with strikethrough", () => {
+    const html = renderJournalBody("- DONE wake up by 6 AM");
+    expect(html).toContain("task-done");
+    expect(html).toContain("task-strike");
+    expect(html).toContain("wake up by 6 AM");
+  });
+
+  it("renders LATER, WAITING, CANCELLED with muted styling", () => {
+    expect(renderJournalBody("- LATER review backlog")).toContain("task-later");
+    expect(renderJournalBody("- WAITING on design review")).toContain("task-waiting");
+    expect(renderJournalBody("- CANCELLED old idea")).toContain("task-cancelled");
+  });
+
+  it("renders CANCELLED bullet with strikethrough", () => {
+    const html = renderJournalBody("- CANCELLED dropped idea");
+    expect(html).toContain("task-strike");
+  });
+
+  it("renders NOW with danger/red styling", () => {
+    const html = renderJournalBody("- NOW urgent fix");
+    expect(html).toContain("task-now");
+  });
+
+  it("task keywords in indented bullets preserve depth", () => {
+    const html = renderJournalBody("  - DONE nested task");
+    expect(html).toContain("margin-left:16px");
+    expect(html).toContain("task-done");
+  });
+
   it("renders headings inside bullets as journal-heading divs", () => {
     const html = renderJournalBody("- ## Section Title");
     expect(html).toContain("journal-heading");

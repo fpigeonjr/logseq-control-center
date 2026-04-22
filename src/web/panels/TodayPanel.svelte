@@ -246,11 +246,69 @@
   .journal-body :global(.inline-code) {
     font-family: var(--font);
     font-size: 11px;
-    color: var(--warning);
-    background: rgba(250, 179, 135, 0.1);
-    border: 1px solid rgba(250, 179, 135, 0.2);
+    color: var(--text);
+    background: var(--surface-overlay);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 4px;
+    padding: 1px 6px;
+  }
+
+  /* ── Task state bullets ─────────────────────────────────── */
+  .journal-body :global(.task-bullet) {
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .journal-body :global(.task-badge) {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
     padding: 1px 5px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  /* TODO — amber */
+  .journal-body :global(.task-todo .task-badge) {
+    background: rgba(250, 179, 135, 0.18);
+    color: var(--warning);
+    border: 1px solid rgba(250, 179, 135, 0.3);
+  }
+
+  /* DOING — accent purple */
+  .journal-body :global(.task-doing .task-badge) {
+    background: rgba(124, 106, 247, 0.2);
+    color: var(--accent-hover);
+    border: 1px solid rgba(124, 106, 247, 0.4);
+  }
+
+  /* DONE — green + strikethrough */
+  .journal-body :global(.task-done .task-badge) {
+    background: rgba(166, 227, 161, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(166, 227, 161, 0.25);
+  }
+
+  .journal-body :global(.task-strike) {
+    text-decoration: line-through;
+    opacity: 0.45;
+  }
+
+  /* LATER / WAITING / CANCELLED — muted */
+  .journal-body :global(.task-later .task-badge),
+  .journal-body :global(.task-waiting .task-badge),
+  .journal-body :global(.task-cancelled .task-badge) {
+    background: rgba(108, 108, 138, 0.18);
+    color: var(--muted);
+    border: 1px solid rgba(108, 108, 138, 0.25);
+  }
+
+  /* NOW — red / danger */
+  .journal-body :global(.task-now .task-badge) {
+    background: rgba(243, 139, 168, 0.18);
+    color: var(--danger);
+    border: 1px solid rgba(243, 139, 168, 0.3);
   }
 
   .state-empty {
