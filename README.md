@@ -2,8 +2,18 @@
 
 Local dashboard for your LogSeq graph — a life OS control center.
 
-> **Status:** M1 scaffolding — indexer + server routes + tests wired up.  
-> Web UI in progress (M2).
+> **Status:** M2 complete, M3 in progress  
+> **Project Board:** [LogSeq Control Center - Kanban](https://github.com/users/fpigeonjr/projects/1)
+
+## Progress Tracking
+
+Track development progress via the [GitHub Project Board](https://github.com/users/fpigeonjr/projects/1):
+
+- **M1:** Complete — Indexer, API server, tests
+- **M2:** Complete — Today/Areas/Projects dashboard UI
+- **M3:** In progress — Polish + deploy (LaunchAgent, mobile access)
+- **M4:** Planned — Search + random note features
+- **M5:** Planned — Write features (quick capture, review queue)
 
 ## Prerequisites
 
