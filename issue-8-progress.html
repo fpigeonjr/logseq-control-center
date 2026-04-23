@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue #8 Progress: LaunchAgent Setup - LogSeq Control Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #24292e;
+            background: #f6f8fa;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin: 20px 0;
+        }
+
+        .header {
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #24292e;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #57606a;
+            margin-bottom: 20px;
+        }
+
+        .metadata {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 14px;
+            color: #57606a;
+            background: #f6f8fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .metadata-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+
+        .badge-deploy {
+            background: #0e8a16;
+            color: white;
+        }
+
+        .badge-m3 {
+            background: #fbca04;
+            color: #24292e;
+        }
+
+        .badge-open {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-closed {
+            background: #6a737d;
+            color: white;
+        }
+
+        .section {
+            margin: 40px 0;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+            background: #fafbfc;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #24292e;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 20px;
+            color: #24292e;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: #e1e4e8;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #2ea44f);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #24292e;
+            margin-top: 5px;
+        }
+
+        .checklist {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 12px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e1e4e8;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-right: 12px;
+            margin-top: 4px;
+            transform: scale(1.2);
+        }
+
+        .checklist-item.completed {
+            background: #f0fff4;
+            border-color: #28a745;
+        }
+
+        .checklist-item.in-progress {
+            background: #fff8c5;
+            border-color: #fbca04;
+        }
+
+        .code-block {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 14px;
+        }
+
+        .file-structure {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 15px 0;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .update-log {
+            background: white;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .update-entry {
+            padding: 15px;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        .update-entry:last-child {
+            border-bottom: none;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #6a737d;
+            margin-bottom: 5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            padding: 12px 24px;
+            background: #0366d6;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .nav-button:hover {
+            background: #0250a4;
+        }
+
+        .nav-button-gh {
+            background: #24292e;
+        }
+
+        .nav-button-gh:hover {
+            background: #000;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-ready { background: #28a745; color: white; }
+        .status-inprogress { background: #fbca04; color: #24292e; }
+        .status-blocked { background: #cb2431; color: white; }
+        .status-planning { background: #6a737d; color: white; }
+
+        .prerequisites {
+            background: #fff8c5;
+            border: 1px solid #fbca04;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .prerequisites h3 {
+            color: #b08800;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Issue #8: LaunchAgent — always-on server on macOS</h1>
+            <div class="subtitle">LogSeq Control Center Deployment Tracking</div>
+            
+            <div class="metadata">
+                <div class="metadata-item">
+                    <strong>Repository:</strong> fpigeonjr/logseq-control-center
+                </div>
+                <div class="metadata-item">
+                    <strong>Issue Number:</strong> #8
+                </div>
+                <div class="metadata-item">
+                    <strong>State:</strong> <span class="badge badge-open">OPEN</span>
+                </div>
+                <div class="metadata-item">
+                    <strong>Milestone:</strong> <span class="badge badge-m3">M3 - Polish & Deploy</span>
+                </div>
+                <div class="metadata-item">
+                    <strong>Labels:</strong> <span class="badge badge-deploy">deploy</span>
+                </div>
+                <div class="metadata-item">
+                    <strong>Created:</strong> 2026-04-22T16:25:33Z
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Goal</h2>
+            <p>Run the Hono server as a macOS LaunchAgent so the dashboard is always reachable on the home network without needing a terminal open.</p>
+            
+            <div class="prerequisites">
+                <h3>🔧 Prerequisites (from dotfiles pattern)</h3>
+                <ul>
+                    <li>Follow same pattern as <code>sync-notes-to-icloud</code> LaunchAgent in dotfiles repo</li>
+                    <li>Source environment from <code>.env</code> file (NOT hardcoded values)</li>
+                    <li>Logs to <code>~/.local/share/logs/</code> directory</li>
+                    <li>Do NOT use Homebrew rsync — Node binary path from fnm must be resolved correctly</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 Progress Overview</h2>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="progress-text">0% Complete</div>
+            
+            <div class="checklist">
+                <div class="checklist-item">
+                    <input type="checkbox" id="task1">
+                    <label for="task1">
+                        <strong><code>launchd/com.fpigeonjr.logseq-control-center.plist</code></strong> created
+                        <span class="status-pill status-planning">Planning</span>
+                    </label>
+                </div>
+                
+                <div class="checklist-item">
+                    <input type="checkbox" id="task2">
+                    <label for="task2">
+                        <strong>Reads <code>NOTES_DIR</code> and <code>PORT</code> from a <code>.env</code> file</strong>
+                        <br><small>Environment variables sourced via <code>EnvironmentVariables</code> key or wrapper script</small>
+                        <span class="status-pill status-planning">Planning</span>
+                    </label>
+                </div>
+                
+                <div class="checklist-item">
+                    <input type="checkbox" id="task3">
+                    <label for="task3">
+                        <strong>Logs to <code>~/.local/share/logs/logseq-control-center.{out,err}.log</code></strong>
+                        <span class="status-pill status-planning">Planning</span>
+                    </label>
+                </div>
+                
+                <div class="checklist-item">
+                    <input type="checkbox" id="task4">
+                    <label for="task4">
+                        <strong><code>make launchd-install</code> command</strong>
+                        <br><small>Copies plist to <code>~/Library/LaunchAgents/</code> and runs <code>launchctl load</code></small>
+                        <span class="status-pill status-planning">Planning</span>
+                    </label>
+                </div>
+                
+                <div class="checklist-item">
+                    <input type="checkbox" id="task5">
+                    <label for="task5">
+                        <strong><code>make launchd-uninstall</code> command</strong>
+                        <br><small>Unloads and removes plist</small>
+                        <span class="status-pill status-planning">Planning</span>
+                    </label>
+                </div>
+                
+                <div class="checklist-item">
+                    <input type="checkbox" id="task6">
+                    <label for="task6">
+                        <strong><code>make launchd-logs</code> command</strong>
+                        <br><small>Tails both log files</small>
+                        <span class="status-pill status-planning">Planning</span>
+                    </label>
+                </div>
+                
+                <div class="checklist-item">
+                    <input type="checkbox" id="task7">
+                    <label for="task7">
+                        <strong>README updated with LAN access instructions</strong>
+                        <br><small><code>http://&lt;hostname&gt;.local:7890</code></small>
+                        <span class="status-pill status-planning">Planning</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📁 Planned File Structure</h2>
+            
+            <div class="file-structure">
+logseq-control-center/
+├── launchd/
+│   └── com.fpigeonjr.logseq-control-center.plist  # LaunchAgent config
+├── scripts/
+│   └── launchd-wrapper.sh                         # Wrapper for env sourcing
+├── Makefile                                       # Updated with launchd commands
+├── README.md                                      # Updated with deployment instructions
+└── .env.example                                   # Template for environment vars
+            </div>
+            
+            <h3>Key Dependencies:</h3>
+            <ul>
+                <li>Node binary path resolution (fnm/Homebrew)</li>
+                <li>Environment variable sourcing strategy</li>
+                <li>Log directory creation</li>
+                <li>Proper signal handling for graceful shutdown</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Technical Approach</h2>
+            
+            <h3>Reference Implementation</h3>
+            <p>Following the <code>sync-notes-to-icloud</code> LaunchAgent pattern from dotfiles repo:</p>
+            
+            <div class="code-block">
+# From dotfiles repo reference
+/Users/fpigeon/dotfiles/launchd/com.fpigeon.sync-notes-to-icloud.plist
+            </div>
+            
+            <h3>Key Requirements:</h3>
+            <ol>
+                <li><strong>Environment Variables:</strong> Must read from <code>.env</code> file in project root</li>
+                <li><strong>Node Path:</strong> Resolve via <code>which node</code> or fnm/Homebrew path</li>
+                <li><strong>Logging:</strong> Standard output/error redirection to log files with rotation</li>
+                <li><strong>Graceful Shutdown:</strong> Handle SIGTERM for clean shutdown</li>
+                <li><strong>Working Directory:</strong> Set to project root for relative paths</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>📝 Implementation Log</h2>
+            
+            <div class="update-log">
+                <div class="update-entry">
+                    <div class="timestamp">2026-04-23 [START] - Analysis & Planning</div>
+                    <p><strong>Status:</strong> Initial analysis complete. Created this progress tracking document.</p>
+                    <p><strong>Actions:</strong> Reviewed issue requirements, checked dotfiles repo for reference pattern, analyzed project structure.</p>
+                    <p><strong>Next Steps:</strong> Create LaunchAgent plist file with proper environment variable handling.</p>
+                </div>
+                
+                <div class="update-entry">
+                    <div class="timestamp">Next Step Pending</div>
+                    <p><strong>Planned:</strong> Create <code>launchd/com.fpigeonjr.logseq-control-center.plist</code> file</p>
+                    <p><strong>Tasks:</strong></p>
+                    <ol>
+                        <li>Design plist structure with <code>EnvironmentVariables</code> key</li>
+                        <li>Add proper <code>WorkingDirectory</code> setting</li>
+                        <li>Configure log file paths</li>
+                        <li>Test Node path resolution</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Testing Plan</h2>
+            
+            <h3>Manual Verification Steps:</h3>
+            <ol>
+                <li><strong>Basic Function:</strong> <code>make launchd-install</code> should copy plist and load LaunchAgent</li>
+                <li><strong>Service Status:</strong> Use <code>launchctl list | grep logseq-control-center</code></li>
+                <li><strong>Log Verification:</strong> Check <code>~/.local/share/logs/logseq-control-center.{out,err}.log</code></li>
+                <li><strong>API Access:</strong> Test <code>curl http://localhost:7890/api/health</code></li>
+                <li><strong>Auto-start:</strong> Reboot test (or <code>launchctl unload</code> then <code>launchctl load</code>)</li>
+            </ol>
+            
+            <h3>Edge Cases:</h3>
+            <ul>
+                <li>Missing <code>.env</code> file → graceful error handling</li>
+                <li>Node process crash → LaunchAgent restart behavior</li>
+                <li>Log file rotation and size management</li>
+                <li>Multiple instances prevention</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🔗 Related Resources</h2>
+            
+            <div class="nav-links">
+                <a href="https://github.com/fpigeonjr/logseq-control-center/issues/8" class="nav-button nav-button-gh" target="_blank">
+                    View Issue #8 on GitHub
+                </a>
+                
+                <a href="https://github.com/users/fpigeonjr/projects/1" class="nav-button" target="_blank">
+                    View Project Board
+                </a>
+                
+                <a href="https://github.com/fpigeonjr/logseq-control-center" class="nav-button" target="_blank">
+                    Repository Home
+                </a>
+                
+                <a href="https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html" class="nav-button" target="_blank">
+                    Launchd Documentation
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Success Criteria</h2>
+            <p>This issue will be considered complete when:</p>
+            <ol>
+                <li>Dashboard server runs automatically on system startup</li>
+                <li>Server is accessible at <code>http://&lt;hostname&gt;.local:7890</code> from LAN devices</li>
+                <li>Logs are properly managed and accessible</li>
+                <li>Installation/uninstallation are one-command operations via Makefile</li>
+                <li>Documentation is updated for end users</li>
+            </ol>
+        </div>
+
+        <div class="metadata">
+            <div class="metadata-item">
+                <strong>Last Updated:</strong> <span id="current-date">Loading...</span>
+            </div>
+            <div class="metadata-item">
+                <strong>Progress Document Version:</strong> 1.0
+            </div>
+            <div class="metadata-item">
+                <strong>Auto-refresh:</strong> Manual (edit HTML to update)
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set current date
+        document.getElementById('current-date').textContent = new Date().toISOString().split('T')[0];
+        
+        // Simple progress calculation based on checkboxes
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+            const completed = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const total = checkboxes.length;
+            const percentage = (completed / total) * 100;
+            
+            document.querySelector('.progress-fill').style.width = `${percentage}%`;
+            document.querySelector('.progress-text').textContent = `${Math.round(percentage)}% Complete`;
+        }
+        
+        // Add event listeners to checkboxes
+        document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const listItem = this.closest('.checklist-item');
+                if (this.checked) {
+                    listItem.classList.add('completed');
+                    listItem.classList.remove('in-progress');
+                } else {
+                    listItem.classList.remove('completed');
+                }
+                updateProgress();
+            });
+        });
+        
+        // Initialize
+        updateProgress();
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 .PHONY: install dev dev-server dev-web build index lint lint-fix \
         test test-watch test-coverage test-e2e test-e2e-ui test-all \
-        typecheck clean playwright-install
+        typecheck clean playwright-install progress-doc
 
 # ── Setup ──────────────────────────────────────────────────────────────────
 
@@ -68,7 +68,16 @@ test-e2e-ui: install playwright-install
 test-all: install playwright-install
 	npm run test:all
 
+# ── Documentation ──────────────────────────────────────────────────────────
+
+# Open progress tracking for Issue #8 (LaunchAgent)
+progress-doc:
+	@echo "Opening progress documentation for Issue #8..."
+	open issue-8-progress.html 2>/dev/null || \
+	  echo "Use: python3 -m http.server 8000 & open http://localhost:8000/issue-8-progress.html"
+
 # ── Housekeeping ───────────────────────────────────────────────────────────
 
 clean:
 	rm -rf dist coverage playwright-report test-results node_modules/.vite
+	rm -f issue-8-progress.html
