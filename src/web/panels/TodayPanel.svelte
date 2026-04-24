@@ -192,6 +192,10 @@
     gap: 4px;
     font-size: 12px;
     line-height: 1.55;
+    /* Prevent any child from blowing out the container */
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .journal-body :global(.journal-bullet) {
@@ -199,6 +203,10 @@
     gap: 8px;
     color: var(--text-dim);
     padding: 1px 0;
+    /* flex children need min-width:0 to shrink below content size */
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .journal-body :global(.journal-bullet::before) {
@@ -221,6 +229,8 @@
 
   .journal-body :global(.journal-line) {
     color: var(--text-dim);
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .journal-body :global(.wikilink) {
@@ -251,6 +261,45 @@
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 4px;
     padding: 1px 6px;
+    /* inline-code can contain long tokens — let them wrap */
+    overflow-wrap: break-word;
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+
+  /* ── Markdown links ────────────────────────────────────── */
+  .journal-body :global(.md-link) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    overflow-wrap: break-word;
+    word-break: break-all;
+  }
+  .journal-body :global(.md-link:hover) {
+    color: var(--accent-hover);
+  }
+
+  /* ── Pipe tables ────────────────────────────────────────── */
+  .journal-body :global(.table-wrapper) {
+    overflow-x: auto;
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin: 4px 0;
+  }
+  .journal-body :global(.journal-table) {
+    border-collapse: collapse;
+    font-size: 11px;
+    width: 100%;
+  }
+  .journal-body :global(.journal-table td) {
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text-dim);
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-width: 60px;
   }
 
   /* ── Task state bullets ─────────────────────────────────── */

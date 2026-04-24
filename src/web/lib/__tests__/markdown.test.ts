@@ -121,4 +121,56 @@ describe("renderJournalBody", () => {
     expect(html).toContain("Just plain text");
     expect(html).not.toContain("&amp;");
   });
+
+  // ── Markdown links ─────────────────────────────────────────
+
+  it("converts [text](url) to an <a> link", () => {
+    const html = renderJournalBody("- See [PR #123](https://github.com/org/repo/pull/123)");
+    expect(html).toContain('<a class="md-link"');
+    expect(html).toContain('href="https://github.com/org/repo/pull/123"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain("PR #123");
+    expect(html).not.toContain("](https://");
+  });
+
+  it("handles multiple markdown links in one bullet", () => {
+    const html = renderJournalBody(
+      "- [feat A](https://github.com/a/b/pull/1), [fix B](https://github.com/a/b/pull/2)"
+    );
+    expect(html.match(/md-link/g)).toHaveLength(2);
+  });
+
+  it("does not turn [[wikilinks]] into md-links", () => {
+    const html = renderJournalBody("- [[Active Projects]]");
+    expect(html).toContain("wikilink");
+    expect(html).not.toContain("md-link");
+  });
+
+  // ── Pipe tables ────────────────────────────────────────────
+
+  it("renders a markdown table as journal-table", () => {
+    const md = `| Col A | Col B |\n|-------|-------|\n| foo   | bar   |`;
+    const html = renderJournalBody(md);
+    expect(html).toContain("table-wrapper");
+    expect(html).toContain("journal-table");
+    expect(html).toContain("<td>foo</td>");
+    expect(html).toContain("<td>bar</td>");
+    // separator row should be stripped
+    expect(html).not.toContain("-------");
+  });
+
+  it("skips table separator rows (|---|)", () => {
+    const md = `| A | B |\n|---|---|\n| 1 | 2 |`;
+    const html = renderJournalBody(md);
+    const rows = html.match(/<tr>/g) ?? [];
+    // header row + data row = 2 rows (separator stripped)
+    expect(rows).toHaveLength(2);
+  });
+
+  it("applies processInline inside table cells", () => {
+    const md = `| **bold** | [[Link]] |\n|---|---|`;
+    const html = renderJournalBody(md);
+    expect(html).toContain("<strong>bold</strong>");
+    expect(html).toContain('<span class="wikilink">Link</span>');
+  });
 });

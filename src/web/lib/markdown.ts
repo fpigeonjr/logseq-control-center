@@ -6,19 +6,26 @@
  *   - `## Heading` — both bare lines AND inside a bullet
  *   - LogSeq task states: TODO / DOING / DONE / LATER / NOW / WAITING / CANCELLED
  *   - `[[wikilink]]` → styled span
+ *   - `[text](url)` → <a> link (opens in new tab)
  *   - `**bold**` → <strong>
  *   - `` `code` `` → <code>
  *   - `#tag` → badge span
+ *   - `| table | rows |` → scrollable <table>
  *
  * This is NOT a full markdown parser — just enough for readable journals.
  */
 
 const WIKILINK_RE = /\[\[([^\]]+)\]\]/g;
+// Standard markdown link — must run BEFORE wikilink to avoid double-processing
+const LINK_RE = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
 const BOLD_RE = /\*\*([^*]+)\*\*/g;
 const CODE_RE = /`([^`]+)`/g;
 const TAG_RE = /(^|\s)(#[a-zA-Z0-9_/-]+)/g;
 const BULLET_RE = /^(\s*)- (.*)/;
 const HEADING_RE = /^#{1,4}\s+(.+)/;
+const TABLE_ROW_RE = /^\|(.+)\|\s*$/;
+// Separator rows like |---|---| — skip them
+const TABLE_SEP_RE = /^\|[\s|:-]+\|\s*$/;
 // Matches LogSeq task keywords at start of bullet content (with optional colon)
 const TASK_RE = /^(TODO|DOING|DONE|LATER|NOW|WAITING|CANCELLED):?\s+(.*)/s;
 
@@ -33,11 +40,48 @@ const TASK_META: Record<string, { label: string; cls: string; strike: boolean }>
 };
 
 function processInline(text: string): string {
-  return text
+  // Step 1: Stash markdown links as placeholders so subsequent regexes
+  // (TAG_RE, CODE_RE, etc.) don't mangle their text or URLs.
+  const links: Array<{ placeholder: string; html: string }> = [];
+  let idx = 0;
+  const withPlaceholders = text.replace(LINK_RE, (_, linkText, url) => {
+    const placeholder = `\x00LINK${idx++}\x00`;
+    links.push({
+      placeholder,
+      html: `<a class="md-link" href="${url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`,
+    });
+    return placeholder;
+  });
+
+  // Step 2: Apply remaining inline transforms
+  let result = withPlaceholders
     .replace(WIKILINK_RE, '<span class="wikilink">$1</span>')
     .replace(BOLD_RE, "<strong>$1</strong>")
     .replace(CODE_RE, '<code class="inline-code">$1</code>')
     .replace(TAG_RE, '$1<span class="journal-tag">$2</span>');
+
+  // Step 3: Restore links
+  for (const { placeholder, html } of links) {
+    result = result.replace(placeholder, html);
+  }
+
+  return result;
+}
+
+function renderTable(rows: string[]): string {
+  const htmlRows = rows
+    .filter((r) => !TABLE_SEP_RE.test(r))
+    .map((row) => {
+      const cells = row
+        .replace(/^\|/, "")
+        .replace(/\|$/, "")
+        .split("|")
+        .map((cell) => `<td>${processInline(cell.trim())}</td>`)
+        .join("");
+      return `<tr>${cells}</tr>`;
+    })
+    .join("");
+  return `<div class="table-wrapper"><table class="journal-table"><tbody>${htmlRows}</tbody></table></div>`;
 }
 
 function renderBulletContent(content: string, depth: number): string {
@@ -66,9 +110,28 @@ export function renderJournalBody(raw: string): string {
 
   const lines = raw.split("\n");
   const parts: string[] = [];
+  const tableBuffer: string[] = [];
+
+  function flushTable() {
+    if (tableBuffer.length) {
+      parts.push(renderTable([...tableBuffer]));
+      tableBuffer.length = 0;
+    }
+  }
 
   for (const line of lines) {
-    if (!line.trim()) continue;
+    if (!line.trim()) {
+      flushTable();
+      continue;
+    }
+
+    // Collect consecutive table rows
+    if (TABLE_ROW_RE.test(line.trim())) {
+      tableBuffer.push(line.trim());
+      continue;
+    }
+
+    flushTable();
 
     const bulletMatch = line.match(BULLET_RE);
     if (bulletMatch) {
@@ -86,6 +149,8 @@ export function renderJournalBody(raw: string): string {
       }
     }
   }
+
+  flushTable();
 
   return parts.join("\n");
 }
