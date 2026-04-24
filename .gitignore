@@ -6,3 +6,7 @@ test-results/
 .env
 *.local
 .DS_Store
+
+# Compiled JS artifacts that might land in src/ due to tsconfig misconfiguration
+src/**/*.js
+src/**/*.d.ts

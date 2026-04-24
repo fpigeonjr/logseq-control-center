@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+  <key>Label</key>
+  <string>com.fpigeonjr.logseq-control-center</string>
+
+  <!-- Run the wrapper script that sources .env and resolves node via fnm -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/fpigeonjr/Code/logseq-control-center/launchd/start-server.sh</string>
+  </array>
+
+  <!-- Start immediately on login and on every boot -->
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- Restart automatically if the process exits for any reason -->
+  <key>KeepAlive</key>
+  <true/>
+
+  <!-- Working directory (also used by the wrapper script) -->
+  <key>WorkingDirectory</key>
+  <string>/Users/fpigeonjr/Code/logseq-control-center</string>
+
+  <!-- Logs -->
+  <key>StandardOutPath</key>
+  <string>/Users/fpigeonjr/.local/share/logs/logseq-control-center.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/fpigeonjr/.local/share/logs/logseq-control-center.err.log</string>
+
+  <!-- Throttle rapid restart loops (10-second back-off) -->
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+</dict>
+</plist>

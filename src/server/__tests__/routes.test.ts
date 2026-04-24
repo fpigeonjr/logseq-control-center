@@ -20,7 +20,8 @@ beforeAll(async () => {
 async function get(path: string) {
   const req = new Request(`http://localhost${path}`);
   const res = await app.fetch(req);
-  return { status: res.status, body: await res.json() };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return { status: res.status, body: (await res.json()) as any };
 }
 
 // ---------------------------------------------------------------------------

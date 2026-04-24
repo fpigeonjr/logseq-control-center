@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "dist/server",
-    "rootDir": "src/server"
+    "rootDir": "src"
   },
-  "include": ["src/server/**/*", "src/indexer/**/*", "src/shared/**/*"]
+  "include": ["src/server/**/*", "src/indexer/**/*", "src/shared/**/*"],
+  "exclude": ["src/**/__tests__/**/*", "src/indexer/cli.ts", "node_modules"]
 }

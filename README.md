@@ -66,6 +66,46 @@ tests/
   fixtures/     # Sample LogSeq notes used by unit tests
 ```
 
+## Always-on server (macOS LaunchAgent)
+
+Run the dashboard automatically on login so it's always available on your LAN:
+
+```bash
+# 1. Build the production server
+make build
+
+# 2. Copy .env.example → .env and set your NOTES_DIR / PORT
+cp .env.example .env
+
+# 3. Install & start the LaunchAgent
+make launchd-install
+
+# 4. (Optional) start immediately without waiting for re-login
+launchctl start com.fpigeonjr.logseq-control-center
+```
+
+### LAN access
+
+Once running, open the dashboard from any device on your local network:
+
+```
+http://<your-mac-hostname>.local:7890
+```
+
+Find your hostname with `scutil --get LocalHostName`. The server binds to
+`0.0.0.0` by default (`HOST=0.0.0.0` in `.env`) so it's reachable over Wi-Fi.
+
+### LaunchAgent commands
+
+| Command | Description |
+| ---------------------- | ----------------------------------------- |
+| `make launchd-install` | Build, install plist, and load the agent |
+| `make launchd-uninstall` | Unload and remove the plist |
+| `make launchd-logs` | Tail stdout + stderr log files |
+| `make launchd-status` | Show launchd service status |
+
+Logs are written to `~/.local/share/logs/logseq-control-center.{out,err}.log`.
+
 ## API routes
 
 | Route                    | Description                       |

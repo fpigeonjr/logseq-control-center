@@ -74,9 +74,9 @@ async function buildPage(filePath: string, notesDir: string): Promise<NotePage |
 
 async function collectMarkdownFiles(dir: string): Promise<string[]> {
   const files: string[] = [];
-  let entries: Awaited<ReturnType<typeof fs.readdir>>;
+  let entries: import("fs").Dirent<string>[] = [];
   try {
-    entries = await fs.readdir(dir, { withFileTypes: true });
+    entries = await fs.readdir(dir, { withFileTypes: true, encoding: "utf8" });
   } catch {
     return files;
   }
