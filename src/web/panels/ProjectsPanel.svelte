@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { api } from "../lib/api.js";
   import PageCard from "../lib/PageCard.svelte";
+  import { pageStore } from "../stores/page.svelte.js";
   import type { ProjectsResponse } from "../../shared/types.js";
 
   let data = $state<ProjectsResponse | null>(null);
@@ -44,7 +45,7 @@
       {#if data.active.length > 0}
         <div class="project-list" data-testid="active-list">
           {#each data.active as page (page.title)}
-            <PageCard {page} />
+            <PageCard {page} onClick={(t) => pageStore.open(t)} />
           {/each}
         </div>
       {/if}
@@ -54,7 +55,7 @@
           <div class="subsection-label">Planning</div>
           <div class="project-list" data-testid="planning-list">
             {#each data.planning as page (page.title)}
-              <PageCard {page} />
+              <PageCard {page} onClick={(t) => pageStore.open(t)} />
             {/each}
           </div>
         </div>
@@ -74,7 +75,7 @@
           {#if showCompleted}
             <div class="project-list completed-list" data-testid="completed-list">
               {#each data.completed as page (page.title)}
-                <PageCard {page} />
+                <PageCard {page} onClick={(t) => pageStore.open(t)} />
               {/each}
             </div>
           {/if}

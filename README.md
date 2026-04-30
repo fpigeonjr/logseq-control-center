@@ -2,7 +2,7 @@
 
 Local dashboard for your LogSeq graph — a life OS control center.
 
-> **Status:** M2 complete, M3 in progress  
+> **Status:** Detail pages + navigation complete, M3 in progress  
 > **Project Board:** [LogSeq Control Center - Kanban](https://github.com/users/fpigeonjr/projects/1)
 
 ## Progress Tracking
@@ -11,6 +11,7 @@ Track development progress via the [GitHub Project Board](https://github.com/use
 
 - **M1:** Complete — Indexer, API server, tests
 - **M2:** Complete — Today/Areas/Projects dashboard UI
+- **M2.5:** Complete — Detail pages: click any project/area/journal card to view full content, backlinks, and navigate via `[[wikilinks]]`
 - **M3:** In progress — Polish + deploy (LaunchAgent, mobile access)
 - **M4:** Planned — Search + random note features
 - **M5:** Planned — Write features (quick capture, review queue)
@@ -97,12 +98,12 @@ Find your hostname with `scutil --get LocalHostName`. The server binds to
 
 ### LaunchAgent commands
 
-| Command | Description |
-| ---------------------- | ----------------------------------------- |
-| `make launchd-install` | Build, install plist, and load the agent |
-| `make launchd-uninstall` | Unload and remove the plist |
-| `make launchd-logs` | Tail stdout + stderr log files |
-| `make launchd-status` | Show launchd service status |
+| Command                  | Description                              |
+| ------------------------ | ---------------------------------------- |
+| `make launchd-install`   | Build, install plist, and load the agent |
+| `make launchd-uninstall` | Unload and remove the plist              |
+| `make launchd-logs`      | Tail stdout + stderr log files           |
+| `make launchd-status`    | Show launchd service status              |
 
 Logs are written to `~/.local/share/logs/logseq-control-center.{out,err}.log`.
 

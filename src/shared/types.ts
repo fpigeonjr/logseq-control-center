@@ -91,3 +91,8 @@ export interface ContentResponse {
   title: string;
   content: string;
 }
+
+export interface PageDetailResponse {
+  page: NotePage;
+  backlinks: NotePage[];
+}

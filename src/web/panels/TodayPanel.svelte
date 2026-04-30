@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { api } from "../lib/api.js";
-  import { formatJournalDate, isoOffset } from "../lib/format.js";
+  import { formatJournalDate, isoOffset, localIsoToday } from "../lib/format.js";
   import { renderJournalBody } from "../lib/markdown.js";
+  import { pageStore } from "../stores/page.svelte.js";
   import type { TodayResponse } from "../../shared/types.js";
 
-  let currentDate = $state<string>(new Date().toISOString().split("T")[0]);
+  let currentDate = $state<string>(localIsoToday());
   let todayData = $state<TodayResponse | null>(null);
   let bodyHtml = $state<string>("");
   let loadingMeta = $state(true);
@@ -18,18 +19,13 @@
     bodyHtml = "";
 
     try {
-      const today = new Date().toISOString().split("T")[0];
-      if (iso === today) {
-        todayData = await api<TodayResponse>("/today");
-      } else {
-        const res = await api<{ date: string; page: TodayResponse["page"] }>(`/journal/${iso}`);
-        todayData = {
-          date: iso,
-          page: res.page,
-          yesterday: isoOffset(iso, -1),
-          tomorrow: isoOffset(iso, 1),
-        };
-      }
+      const res = await api<{ date: string; page: TodayResponse["page"] }>(`/journal/${iso}`);
+      todayData = {
+        date: iso,
+        page: res.page,
+        yesterday: isoOffset(iso, -1),
+        tomorrow: isoOffset(iso, 1),
+      };
 
       if (todayData?.page) {
         loadingBody = true;
@@ -59,7 +55,7 @@
     loadDate(next);
   }
 
-  let isToday = $derived(currentDate === new Date().toISOString().split("T")[0]);
+  let isToday = $derived(currentDate === localIsoToday());
 </script>
 
 <div class="panel" data-testid="today-panel">
@@ -84,10 +80,29 @@
     {:else if error}
       <p class="state-error">⚠ {error}</p>
     {:else}
-      <div class="journal-date" data-testid="journal-date">
-        {formatJournalDate(currentDate)}
-        <span class="journal-iso">{currentDate}</span>
-      </div>
+      {#if todayData?.page}
+        <div
+          class="journal-date clickable"
+          data-testid="journal-date"
+          role="button"
+          tabindex="0"
+          onclick={() => pageStore.open(todayData.page.title)}
+          onkeydown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              pageStore.open(todayData.page.title);
+            }
+          }}
+        >
+          {formatJournalDate(currentDate)}
+          <span class="journal-iso">{currentDate}</span>
+        </div>
+      {:else}
+        <div class="journal-date" data-testid="journal-date">
+          {formatJournalDate(currentDate)}
+          <span class="journal-iso">{currentDate}</span>
+        </div>
+      {/if}
 
       {#if !todayData?.page}
         <p class="state-empty">No journal entry for this day.</p>
@@ -185,179 +200,17 @@
     color: var(--muted);
   }
 
-  /* ── Rendered journal body ──────────────────────────────── */
-  .journal-body {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 12px;
-    line-height: 1.55;
-    /* Prevent any child from blowing out the container */
-    min-width: 0;
-    overflow-wrap: break-word;
-    word-break: break-word;
-  }
-
-  .journal-body :global(.journal-bullet) {
-    display: flex;
-    gap: 8px;
-    color: var(--text-dim);
-    padding: 1px 0;
-    /* flex children need min-width:0 to shrink below content size */
-    min-width: 0;
-    overflow-wrap: break-word;
-    word-break: break-word;
-  }
-
-  .journal-body :global(.journal-bullet::before) {
-    content: "•";
-    color: var(--accent);
-    flex-shrink: 0;
-    margin-top: 1px;
-    opacity: 0.7;
-  }
-
-  .journal-body :global(.journal-heading) {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-    margin-top: 10px;
-    margin-bottom: 3px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .journal-body :global(.journal-line) {
-    color: var(--text-dim);
-    overflow-wrap: break-word;
-    word-break: break-word;
-  }
-
-  .journal-body :global(.wikilink) {
-    color: var(--accent);
+  .journal-date.clickable {
     cursor: pointer;
-    border-bottom: 1px solid rgba(124, 106, 247, 0.3);
+    color: var(--accent);
     transition: color var(--transition-fast);
   }
 
-  .journal-body :global(.wikilink:hover) {
+  .journal-date.clickable:hover {
     color: var(--accent-hover);
-    border-bottom-color: var(--accent);
-  }
-
-  .journal-body :global(.journal-tag) {
-    font-size: 10px;
-    color: var(--muted);
-    background: var(--surface-overlay);
-    border-radius: 4px;
-    padding: 1px 5px;
-  }
-
-  .journal-body :global(.inline-code) {
-    font-family: var(--font);
-    font-size: 11px;
-    color: var(--text);
-    background: var(--surface-overlay);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 4px;
-    padding: 1px 6px;
-    /* inline-code can contain long tokens — let them wrap */
-    overflow-wrap: break-word;
-    word-break: break-all;
-    white-space: pre-wrap;
-  }
-
-  /* ── Markdown links ────────────────────────────────────── */
-  .journal-body :global(.md-link) {
-    color: var(--accent);
     text-decoration: underline;
-    text-underline-offset: 2px;
-    overflow-wrap: break-word;
-    word-break: break-all;
-  }
-  .journal-body :global(.md-link:hover) {
-    color: var(--accent-hover);
-  }
-
-  /* ── Pipe tables ────────────────────────────────────────── */
-  .journal-body :global(.table-wrapper) {
-    overflow-x: auto;
-    width: 100%;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    margin: 4px 0;
-  }
-  .journal-body :global(.journal-table) {
-    border-collapse: collapse;
-    font-size: 11px;
-    width: 100%;
-  }
-  .journal-body :global(.journal-table td) {
-    padding: 5px 8px;
-    border: 1px solid var(--border);
-    vertical-align: top;
-    color: var(--text-dim);
-    overflow-wrap: break-word;
-    word-break: break-word;
-    min-width: 60px;
-  }
-
-  /* ── Task state bullets ─────────────────────────────────── */
-  .journal-body :global(.task-bullet) {
-    align-items: baseline;
-    gap: 6px;
-  }
-
-  .journal-body :global(.task-badge) {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    padding: 1px 5px;
-    border-radius: 4px;
-    flex-shrink: 0;
-    text-transform: uppercase;
-  }
-
-  /* TODO — amber */
-  .journal-body :global(.task-todo .task-badge) {
-    background: rgba(250, 179, 135, 0.18);
-    color: var(--warning);
-    border: 1px solid rgba(250, 179, 135, 0.3);
-  }
-
-  /* DOING — accent purple */
-  .journal-body :global(.task-doing .task-badge) {
-    background: rgba(124, 106, 247, 0.2);
-    color: var(--accent-hover);
-    border: 1px solid rgba(124, 106, 247, 0.4);
-  }
-
-  /* DONE — green + strikethrough */
-  .journal-body :global(.task-done .task-badge) {
-    background: rgba(166, 227, 161, 0.15);
-    color: var(--success);
-    border: 1px solid rgba(166, 227, 161, 0.25);
-  }
-
-  .journal-body :global(.task-strike) {
-    text-decoration: line-through;
-    opacity: 0.45;
-  }
-
-  /* LATER / WAITING / CANCELLED — muted */
-  .journal-body :global(.task-later .task-badge),
-  .journal-body :global(.task-waiting .task-badge),
-  .journal-body :global(.task-cancelled .task-badge) {
-    background: rgba(108, 108, 138, 0.18);
-    color: var(--muted);
-    border: 1px solid rgba(108, 108, 138, 0.25);
-  }
-
-  /* NOW — red / danger */
-  .journal-body :global(.task-now .task-badge) {
-    background: rgba(243, 139, 168, 0.18);
-    color: var(--danger);
-    border: 1px solid rgba(243, 139, 168, 0.3);
+    text-decoration-color: rgba(124, 106, 247, 0.4);
+    text-underline-offset: 3px;
   }
 
   .state-empty {

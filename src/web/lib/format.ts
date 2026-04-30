@@ -16,6 +16,18 @@ export function formatJournalDate(iso: string): string {
 }
 
 /**
+ * Today's date in the browser's local timezone as YYYY-MM-DD.
+ * Avoids UTC off-by-one when the user is behind UTC.
+ */
+export function localIsoToday(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/**
  * 20260422 → "Apr 22 2026"
  */
 export function yyyymmddToDisplay(n: number): string {

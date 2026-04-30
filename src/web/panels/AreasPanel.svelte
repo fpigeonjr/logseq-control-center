@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { api } from "../lib/api.js";
   import { daysSince, yyyymmddToDisplay } from "../lib/format.js";
+  import { pageStore } from "../stores/page.svelte.js";
   import type { AreasResponse, NotePage } from "../../shared/types.js";
 
   let data = $state<AreasResponse | null>(null);
@@ -53,7 +54,19 @@
   {:else}
     <div class="areas-grid" data-testid="areas-grid">
       {#each data.overdue as area (area.title)}
-        <div class="area-card overdue" data-testid="area-card">
+        <div
+          class="area-card overdue"
+          data-testid="area-card"
+          onclick={() => pageStore.open(area.title)}
+          tabindex="0"
+          role="button"
+          onkeydown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              pageStore.open(area.title);
+            }
+          }}
+        >
           <div class="area-top">
             <span class="area-title">{area.title}</span>
             <div class="badges">
@@ -75,7 +88,19 @@
       {/each}
 
       {#each data.upcoming as area (area.title)}
-        <div class="area-card upcoming" data-testid="area-card">
+        <div
+          class="area-card upcoming"
+          data-testid="area-card"
+          onclick={() => pageStore.open(area.title)}
+          tabindex="0"
+          role="button"
+          onkeydown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              pageStore.open(area.title);
+            }
+          }}
+        >
           <div class="area-top">
             <span class="area-title">{area.title}</span>
             <div class="badges">
@@ -94,7 +119,19 @@
 
       {#if showOk}
         {#each data.ok as area (area.title)}
-          <div class="area-card ok" data-testid="area-card">
+          <div
+            class="area-card ok"
+            data-testid="area-card"
+            onclick={() => pageStore.open(area.title)}
+            tabindex="0"
+            role="button"
+            onkeydown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                pageStore.open(area.title);
+              }
+            }}
+          >
             <div class="area-top">
               <span class="area-title">{area.title}</span>
               <div class="badges">
@@ -182,9 +219,12 @@
       transform var(--transition-fast);
   }
 
-  .area-card:hover {
+  .area-card:hover,
+  .area-card:focus-visible {
     border-color: rgba(124, 106, 247, 0.28);
     transform: translateY(-1px);
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .area-card.overdue {

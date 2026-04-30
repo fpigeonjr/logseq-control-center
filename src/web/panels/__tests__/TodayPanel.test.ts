@@ -2,11 +2,12 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, waitFor, cleanup } from "@testing-library/svelte";
 import TodayPanel from "../TodayPanel.svelte";
+import { localIsoToday } from "../../lib/format.js";
 import { mockFetch, restoreFetch } from "../../../../tests/helpers/mockFetch.js";
 
-const TODAY = new Date().toISOString().split("T")[0];
+const TODAY = localIsoToday();
 
-const makeTodayResponse = (overrides = {}) => ({
+const makeJournalResponse = (overrides = {}) => ({
   date: TODAY,
   page: {
     title: TODAY,
@@ -18,8 +19,6 @@ const makeTodayResponse = (overrides = {}) => ({
     outgoingLinks: [],
     preview: "Worked on stuff today",
   },
-  yesterday: "2026-04-21",
-  tomorrow: "2026-04-23",
   ...overrides,
 });
 
@@ -37,7 +36,7 @@ afterEach(() => {
 describe("TodayPanel", () => {
   it("renders today's formatted date", async () => {
     mockFetch({
-      "/api/today": makeTodayResponse(),
+      [`/api/journal/${TODAY}`]: makeJournalResponse(),
       "/api/content": makeContentResponse(),
     });
 
@@ -51,7 +50,7 @@ describe("TodayPanel", () => {
 
   it("renders journal body content after loading", async () => {
     mockFetch({
-      "/api/today": makeTodayResponse(),
+      [`/api/journal/${TODAY}`]: makeJournalResponse(),
       "/api/content": makeContentResponse("- Finished [[Angular]] module 5"),
     });
 
@@ -64,7 +63,7 @@ describe("TodayPanel", () => {
 
   it("shows empty state when no journal page exists for today", async () => {
     mockFetch({
-      "/api/today": makeTodayResponse({ page: null }),
+      [`/api/journal/${TODAY}`]: makeJournalResponse({ page: null }),
     });
 
     render(TodayPanel);
@@ -76,7 +75,7 @@ describe("TodayPanel", () => {
 
   it("shows prev/next navigation buttons", async () => {
     mockFetch({
-      "/api/today": makeTodayResponse(),
+      [`/api/journal/${TODAY}`]: makeJournalResponse(),
       "/api/content": makeContentResponse(),
     });
 
@@ -90,7 +89,7 @@ describe("TodayPanel", () => {
 
   it("disables Next button when viewing today", async () => {
     mockFetch({
-      "/api/today": makeTodayResponse(),
+      [`/api/journal/${TODAY}`]: makeJournalResponse(),
       "/api/content": makeContentResponse(),
     });
 

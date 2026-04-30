@@ -2,7 +2,19 @@
   import type { NotePage } from "../../shared/types.js";
   import { yyyymmddToDisplay } from "./format.js";
 
-  let { page, showMeta = true }: { page: NotePage; showMeta?: boolean } = $props();
+  let {
+    page,
+    showMeta = true,
+    onClick,
+  }: {
+    page: NotePage;
+    showMeta?: boolean;
+    onClick?: (title: string) => void;
+  } = $props();
+
+  function handleClick() {
+    onClick?.(page.title);
+  }
 
   const statusColor: Record<string, string> = {
     active: "badge-success",
@@ -11,7 +23,20 @@
   };
 </script>
 
-<div class="card" role="button" tabindex="0" aria-label={page.title} data-testid="page-card">
+<div
+  class="card"
+  role="button"
+  tabindex="0"
+  aria-label={page.title}
+  data-testid="page-card"
+  onclick={handleClick}
+  onkeydown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleClick();
+    }
+  }}
+>
   <div class="card-top">
     <span class="card-title">{page.title}</span>
     {#if showMeta}

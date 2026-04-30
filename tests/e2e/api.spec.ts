@@ -81,3 +81,31 @@ test.describe("API /stats", () => {
     expect(typeof body.overdueAreas).toBe("number");
   });
 });
+
+test.describe("API /page/:title", () => {
+  test("returns page and backlinks", async ({ request }) => {
+    // Find a known page first
+    const projectsRes = await request.get("/api/projects");
+    const projects = await projectsRes.json();
+    const allProjects = [...projects.active, ...projects.planning];
+
+    if (allProjects.length === 0) {
+      test.skip(true, "No projects in graph — skipping page detail test");
+      return;
+    }
+
+    const title = allProjects[0].title;
+    const res = await request.get(`/api/page/${encodeURIComponent(title)}`);
+    expect(res.ok()).toBe(true);
+
+    const body = await res.json();
+    expect(body.page).toBeDefined();
+    expect(body.page.title).toBe(title);
+    expect(Array.isArray(body.backlinks)).toBe(true);
+  });
+
+  test("returns 404 for unknown page", async ({ request }) => {
+    const res = await request.get("/api/page/NonExistentPage12345");
+    expect(res.status()).toBe(404);
+  });
+});

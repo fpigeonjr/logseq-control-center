@@ -1,12 +1,15 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { fade } from "svelte/transition";
   import { api } from "./lib/api.js";
   import { layoutStore } from "./stores/layout.svelte.js";
+  import { pageStore } from "./stores/page.svelte.js";
   import Nav from "./lib/Nav.svelte";
   import StatsBar from "./lib/StatsBar.svelte";
   import TodayPanel from "./panels/TodayPanel.svelte";
   import ProjectsPanel from "./panels/ProjectsPanel.svelte";
   import AreasPanel from "./panels/AreasPanel.svelte";
+  import PageDetail from "./panels/PageDetail.svelte";
 
   let randomToast = $state<string | null>(null);
   let toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -21,32 +24,53 @@
       /* ignore */
     }
   }
+
+  function handleWikilinkClick(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    const link = target.closest<HTMLElement>(".wikilink");
+    if (!link) return;
+    const title = link.textContent?.trim();
+    if (!title) return;
+    e.preventDefault();
+    e.stopPropagation();
+    pageStore.open(title);
+  }
+
+  onMount(() => {
+    const onHash = () => pageStore.handleHashChange();
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  });
 </script>
 
 <svelte:head>
   <title>🧠 LogSeq Control Center</title>
 </svelte:head>
 
-<div class="app" data-testid="app" data-layout={layoutStore.value}>
+<div class="app" data-testid="app" data-layout={layoutStore.value} onclick={handleWikilinkClick}>
   <Nav onRandomNote={handleRandomNote} />
   <StatsBar />
 
-  {#if layoutStore.value === "b"}
-    <!-- ── Layout B: Today-first (default) ──────────────── -->
-    <main class="layout-b lcc-fade-in">
-      <div class="top-grid">
-        <TodayPanel />
+  {#if pageStore.isDashboard}
+    {#if layoutStore.value === "b"}
+      <!-- ── Layout B: Today-first (default) ──────────────── -->
+      <main class="layout-b lcc-fade-in">
+        <div class="top-grid">
+          <TodayPanel />
+          <ProjectsPanel />
+        </div>
+        <AreasPanel />
+      </main>
+    {:else}
+      <!-- ── Layout A: Review-first ────────────────────────── -->
+      <main class="layout-a lcc-fade-in">
+        <AreasPanel />
         <ProjectsPanel />
-      </div>
-      <AreasPanel />
-    </main>
-  {:else}
-    <!-- ── Layout A: Review-first ────────────────────────── -->
-    <main class="layout-a lcc-fade-in">
-      <AreasPanel />
-      <ProjectsPanel />
-      <TodayPanel />
-    </main>
+        <TodayPanel />
+      </main>
+    {/if}
+  {:else if pageStore.detailTitle}
+    <PageDetail title={pageStore.detailTitle} />
   {/if}
 </div>
 
